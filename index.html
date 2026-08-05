@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Verse Quest" />
+<meta name="theme-color" content="#C9A227" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="manifest" href="manifest.json" />
+<title>Verse Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#FBF8F1;
+    --ivory-2:#F3EDDF;
+    --gold:#C9A227;
+    --gold-2:#E6C158;
+    --gold-deep:#8B6914;
+    --ink:#2B2320;
+    --ink-soft:#5C5347;
+    --line:#E4D9BE;
+    --flame:#C9772A;
+    --good:#4C7A4C;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #FFFDF7 0%, var(--ivory) 55%, var(--ivory-2) 100%);
+    font-family:'Inter', -apple-system, sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    overflow-x:hidden;
+  }
+  .app{ width:100%; max-width:480px; padding:22px 20px 40px; position:relative; }
+
+  /* header */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-mark{ width:34px; height:34px; border-radius:50%; background:conic-gradient(from 210deg, var(--gold-2), var(--gold), var(--gold-deep), var(--gold-2)); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(139,105,20,0.35); }
+  .brand-mark::after{ content:"✝"; color:var(--ivory); font-size:16px; font-weight:700; }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size:21px; letter-spacing:0.3px; }
+  .streak-pill{ display:flex; align-items:center; gap:5px; background:var(--ivory); border:1px solid var(--line); padding:6px 12px; border-radius:20px; font-weight:700; font-size:14px; color:var(--flame); box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+
+  /* level bar */
+  .level-card{ background:var(--ivory); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:20px; }
+  .level-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .level-name{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size:17px; }
+  .level-xp{ font-size:12px; color:var(--ink-soft); font-weight:600; }
+  .bar-track{ height:8px; border-radius:6px; background:var(--ivory-2); overflow:hidden; border:1px solid var(--line); }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold-2), var(--gold)); border-radius:6px; transition:width 0.6s ease; }
+
+  /* seal stage */
+  .stage{ background:var(--ivory); border:1px solid var(--line); border-radius:22px; padding:34px 22px; text-align:center; box-shadow:0 6px 24px rgba(139,105,20,0.08); margin-bottom:18px; min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  .date-label{ font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-bottom:18px; }
+
+  .seal{ width:130px; height:130px; border-radius:50%; cursor:pointer; position:relative; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 32% 28%, var(--gold-2), var(--gold) 55%, var(--gold-deep) 100%); box-shadow:0 10px 22px rgba(139,105,20,0.35), inset 0 2px 6px rgba(255,255,255,0.4); transition:transform 0.25s ease; }
+  .seal:active{ transform:scale(0.94); }
+  .seal::before{ content:"✝"; font-size:46px; color:var(--ivory); }
+  .seal-crack{ animation:crack 0.5s ease forwards; }
+  @keyframes crack{ 0%{transform:scale(1) rotate(0);} 40%{transform:scale(1.08) rotate(-4deg);} 70%{transform:scale(0.9) rotate(3deg);} 100%{transform:scale(0) rotate(0deg); opacity:0;} }
+  .tap-hint{ margin-top:16px; font-size:13px; color:var(--ink-soft); font-weight:600; }
+
+  .verse-wrap{ display:none; }
+  .verse-ref{ font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold-deep); font-weight:700; margin-bottom:10px; opacity:0; animation:fadeUp 0.5s ease forwards; }
+  .verse-text{ font-family:'Cormorant Garamond', serif; font-size:24px; line-height:1.5; font-weight:600; color:var(--ink); }
+  .word{ opacity:0; display:inline-block; animation:fadeUp 0.45s ease forwards; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .done-badge{ display:none; margin-top:16px; font-size:13px; color:var(--good); font-weight:700; }
+  .share-btn{ display:none; margin-top:16px; background:none; border:1px solid var(--line); color:var(--ink-soft); font-weight:700; font-size:13px; padding:8px 16px; border-radius:20px; cursor:pointer; }
+
+  /* challenge card */
+  .challenge{ display:none; background:var(--ivory); border:1px solid var(--line); border-radius:22px; padding:24px 20px; margin-bottom:18px; box-shadow:0 6px 24px rgba(139,105,20,0.08); }
+  .challenge-title{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size:19px; margin-bottom:4px; }
+  .challenge-sub{ font-size:13px; color:var(--ink-soft); margin-bottom:16px; }
+  .blank-verse{ font-family:'Cormorant Garamond', serif; font-size:20px; line-height:1.6; margin-bottom:18px; color:var(--ink); }
+  .blank-slot{ display:inline-block; min-width:64px; border-bottom:2px solid var(--gold); text-align:center; font-weight:700; color:var(--gold-deep); }
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .opt-btn{ text-align:left; padding:13px 16px; border-radius:14px; border:1.5px solid var(--line); background:#fff; font-family:'Inter'; font-size:15px; font-weight:600; color:var(--ink); cursor:pointer; transition:all 0.15s ease; }
+  .opt-btn:active{ transform:scale(0.98); }
+  .opt-btn.correct{ background:#EAF4EA; border-color:var(--good); color:var(--good); }
+  .opt-btn.wrong{ background:#F7E9E4; border-color:#B8543A; color:#B8543A; }
+  .challenge-result{ margin-top:16px; font-size:14px; font-weight:700; text-align:center; display:none; }
+
+  /* stats grid */
+  .stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; }
+  .stat-box{ background:var(--ivory); border:1px solid var(--line); border-radius:14px; padding:14px 10px; text-align:center; }
+  .stat-num{ font-family:'Inter', sans-serif; font-variant-numeric:lining-nums tabular-nums; font-size:24px; font-weight:800; color:var(--gold-deep); }
+  .stat-label{ font-size:10.5px; letter-spacing:0.5px; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-top:2px; }
+
+  /* badges */
+  .section-title{ font-family:'Cormorant Garamond', serif; font-size:18px; font-weight:700; margin:6px 0 10px 2px; }
+  .badges{ display:flex; gap:12px; overflow-x:auto; padding-bottom:6px; }
+  .badge{ flex:0 0 auto; width:78px; text-align:center; }
+  .badge-icon{ width:58px; height:58px; border-radius:50%; margin:0 auto 6px; display:flex; align-items:center; justify-content:center; font-size:22px; background:var(--ivory-2); border:1.5px solid var(--line); color:var(--line); }
+  .badge.unlocked .badge-icon{ background:conic-gradient(from 210deg, var(--gold-2), var(--gold), var(--gold-deep), var(--gold-2)); color:var(--ivory); border-color:transparent; box-shadow:0 4px 10px rgba(139,105,20,0.3); }
+  .badge-label{ font-size:10.5px; font-weight:700; color:var(--ink-soft); }
+
+  .footer-note{ text-align:center; font-size:11.5px; color:var(--ink-soft); margin-top:22px; opacity:0.75; }
+
+  ::-webkit-scrollbar{ display:none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">Verse Quest</div>
+    </div>
+    <div class="streak-pill">🔥 <span id="streakNum">0</span></div>
+  </div>
+
+  <div class="level-card">
+    <div class="level-row">
+      <div class="level-name" id="levelName">Seed</div>
+      <div class="level-xp" id="levelXp">0 / 50 XP</div>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="date-label" id="dateLabel">TODAY</div>
+    <div class="seal" id="sealBtn"></div>
+    <div class="tap-hint" id="tapHint">Tap the seal to open today's verse</div>
+
+    <div class="verse-wrap" id="verseWrap">
+      <div class="verse-ref" id="verseRef"></div>
+      <div class="verse-text" id="verseText"></div>
+      <div class="done-badge" id="doneBadge">✓ Verse read — quest complete for today</div>
+      <button class="share-btn" id="shareBtn">Share this verse</button>
+    </div>
+  </div>
+
+  <div class="challenge" id="challenge">
+    <div class="challenge-title">Fill the Gap</div>
+    <div class="challenge-sub">Complete the verse from memory to earn bonus XP</div>
+    <div class="blank-verse" id="blankVerse"></div>
+    <div class="options" id="options"></div>
+    <div class="challenge-result" id="challengeResult"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Day streak</div></div>
+    <div class="stat-box"><div class="stat-num" id="statBest">0</div><div class="stat-label">Best streak</div></div>
+    <div class="stat-box"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Verses read</div></div>
+  </div>
+
+  <div class="section-title">Badges</div>
+  <div class="badges" id="badges"></div>
+
+  <div class="footer-note">A new verse unlocks every day at midnight</div>
+</div>
+
+<script>
+/* ---------- Verse bank (KJV, public domain) ---------- */
+const VERSES = [
+["Joshua 1:9","Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest."],
+["Philippians 4:13","I can do all things through Christ which strengtheneth me."],
+["Proverbs 3:5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."],
+["Psalm 23:1","The LORD is my shepherd; I shall not want."],
+["Isaiah 41:10","Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee."],
+["Romans 8:28","And we know that all things work together for good to them that love God, to them who are the called according to his purpose."],
+["Jeremiah 29:11","For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end."],
+["John 3:16","For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."],
+["Psalm 46:1","God is our refuge and strength, a very present help in trouble."],
+["Proverbs 16:3","Commit thy works unto the LORD, and thy thoughts shall be established."],
+["2 Timothy 1:7","For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind."],
+["Matthew 6:33","But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you."],
+["Psalm 27:1","The LORD is my light and my salvation; whom shall I fear? the LORD is the strength of my life; of whom shall I be afraid?"],
+["Galatians 6:9","And let us not be weary in well doing: for in due season we shall reap, if we faint not."],
+["Romans 12:2","And be not conformed to this world: but be ye transformed by the renewing of your mind."],
+["Psalm 34:18","The LORD is nigh unto them that are of a broken heart; and saveth such as be of a contrite spirit."],
+["Isaiah 40:31","But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles."],
+["1 Corinthians 13:4","Charity suffereth long, and is kind; charity envieth not; charity vaunteth not itself, is not puffed up."],
+["Psalm 121:1","I will lift up mine eyes unto the hills, from whence cometh my help."],
+["Proverbs 18:10","The name of the LORD is a strong tower: the righteous runneth into it, and is safe."],
+["Matthew 11:28","Come unto me, all ye that labour and are heavy laden, and I will give you rest."],
+["Psalm 37:4","Delight thyself also in the LORD; and he shall give thee the desires of thine heart."],
+["Hebrews 11:1","Now faith is the substance of things hoped for, the evidence of things not seen."],
+["James 1:2","My brethren, count it all joy when ye fall into divers temptations."],
+["Psalm 119:105","Thy word is a lamp unto my feet, and a light unto my path."],
+["Romans 15:13","Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost."],
+["Philippians 4:6","Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God."],
+["Psalm 55:22","Cast thy burden upon the LORD, and he shall sustain thee: he shall never suffer the righteous to be moved."],
+["Deuteronomy 31:6","Be strong and of a good courage, fear not, nor be afraid of them: for the LORD thy God, he it is that doth go with thee."],
+["1 Peter 5:7","Casting all your care upon him; for he careth for you."],
+["Colossians 3:23","And whatsoever ye do, do it heartily, as to the Lord, and not unto men."],
+["Psalm 91:1","He that dwelleth in the secret place of the most High shall abide under the shadow of the Almighty."],
+["Micah 6:8","And what doth the LORD require of thee, but to do justly, and to love mercy, and to walk humbly with thy God."],
+["Ephesians 2:8","For by grace are ye saved through faith; and that not of yourselves: it is the gift of God."],
+["John 14:27","Peace I leave with you, my peace I give unto you: not as the world giveth, give I unto you."],
+["Psalm 62:1","Truly my soul waiteth upon God: from him cometh my salvation."],
+["Nahum 1:7","The LORD is good, a strong hold in the day of trouble; and he knoweth them that trust in him."],
+["Lamentations 3:22","It is of the LORD's mercies that we are not consumed, because his compassions fail not."],
+["Psalm 16:11","Thou wilt shew me the path of life: in thy presence is fulness of joy."],
+["Romans 5:8","But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us."],
+["Ephesians 3:20","Now unto him that is able to do exceeding abundantly above all that we ask or think."],
+["Psalm 143:8","Cause me to hear thy lovingkindness in the morning; for in thee do I trust."],
+["1 Corinthians 16:14","Let all your things be done with charity."],
+["Psalm 118:24","This is the day which the LORD hath made; we will rejoice and be glad in it."],
+["Proverbs 22:6","Train up a child in the way he should go: and when he is old, he will not depart from it."],
+["Isaiah 26:3","Thou wilt keep him in perfect peace, whose mind is stayed on thee: because he trusteth in thee."],
+["Galatians 5:22","But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith."],
+["Psalm 30:5","Weeping may endure for a night, but joy cometh in the morning."],
+["Matthew 5:16","Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven."],
+["Psalm 34:8","O taste and see that the LORD is good: blessed is the man that trusteth in him."],
+["Romans 10:9","That if thou shalt confess with thy mouth the Lord Jesus, and shalt believe in thine heart that God hath raised him from the dead, thou shalt be saved."],
+["Proverbs 17:22","A merry heart doeth good like a medicine: but a broken spirit drieth the bones."],
+["Psalm 100:4","Enter into his gates with thanksgiving, and into his courts with praise: be thankful unto him, and bless his name."],
+["1 John 4:19","We love him, because he first loved us."],
+["Psalm 46:10","Be still, and know that I am God: I will be exalted among the heathen, I will be exalted in the earth."],
+["Joshua 24:15","But as for me and my house, we will serve the LORD."],
+["Psalm 121:2","My help cometh from the LORD, which made heaven and earth."],
+["Hebrews 13:5","Let your conversation be without covetousness; and be content with such things as ye have."],
+["Matthew 7:7","Ask, and it shall be given you; seek, and ye shall find; knock, and it shall be opened unto you."],
+["Psalm 73:26","My flesh and my heart faileth: but God is the strength of my heart, and my portion for ever."],
+["Zephaniah 3:17","The LORD thy God in the midst of thee is mighty; he will save, he will rejoice over thee with joy."],
+["1 Thessalonians 5:16","Rejoice evermore."],
+["Psalm 139:14","I will praise thee; for I am fearfully and wonderfully made: marvellous are thy works."],
+["Proverbs 4:23","Keep thy heart with all diligence; for out of it are the issues of life."],
+["Romans 8:38","For I am persuaded, that neither death, nor life, nor angels, nor principalities, nor powers, shall be able to separate us from the love of God."],
+["Psalm 27:14","Wait on the LORD: be of good courage, and he shall strengthen thine heart: wait, I say, on the LORD."],
+["James 4:8","Draw nigh to God, and he will draw nigh to you."],
+["Psalm 34:4","I sought the LORD, and he heard me, and delivered me from all my fears."],
+["2 Corinthians 5:17","Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things are become new."],
+["Psalm 40:1","I waited patiently for the LORD; and he inclined unto me, and heard my cry."],
+["Ephesians 4:32","And be ye kind one to another, tenderhearted, forgiving one another, even as God for Christ's sake hath forgiven you."],
+["Habakkuk 3:19","The LORD God is my strength, and he will make my feet like hinds' feet, and he will make me to walk upon mine high places."],
+["Psalm 84:11","For the LORD God is a sun and shield: the LORD will give grace and glory."],
+["1 Corinthians 10:13","There hath no temptation taken you but such as is common to man: but God is faithful."],
+["Psalm 145:18","The LORD is nigh unto all them that call upon him, to all that call upon him in truth."],
+["Numbers 6:24","The LORD bless thee, and keep thee."]
+];
+
+const DISTRACT_POOL = ["glory","mercy","grace","faith","truth","spirit","strength","comfort","praise","wisdom","courage","patience","kindness","gladness","righteousness","salvation","gentleness","goodness","holiness","refuge"];
+const STOPWORDS = new Set(["and","the","that","with","from","unto","which","shall","have","hath","thee","thou","thy","thine","for","but","not","are","was","were","his","her","him","she","they","them","who","will","when","then","than","upon","into","also","among","because","before","after","their","this","these","those","doth","hast","art"]);
+
+/* ---------- Storage ---------- */
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null? d : JSON.parse(v);}catch(e){return d;} },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+function dayIndex(){
+  const epoch = new Date(2024,0,1);
+  const now = new Date();
+  const diff = Math.floor((new Date(now.getFullYear(),now.getMonth(),now.getDate()) - epoch) / 86400000);
+  return ((diff % VERSES.length) + VERSES.length) % VERSES.length;
+}
+
+let state = LS.get("vq_state", { xp:0, streak:0, best:0, total:0, lastDate:null, completedToday:false, badges:{} });
+
+/* ---------- Levels ---------- */
+const LEVELS = [
+  {name:"Seed", need:0},
+  {name:"Sprout", need:50},
+  {name:"Sapling", need:150},
+  {name:"Rooted", need:350},
+  {name:"Flourishing", need:700},
+  {name:"Steadfast", need:1200},
+  {name:"Unshaken", need:2000}
+];
+function levelInfo(xp){
+  let cur = LEVELS[0], next = LEVELS[1];
+  for(let i=0;i<LEVELS.length;i++){
+    if(xp >= LEVELS[i].need){ cur = LEVELS[i]; next = LEVELS[i+1] || null; }
+  }
+  return {cur, next};
+}
+
+const BADGE_DEFS = [
+  {id:"d7", label:"7 Days", icon:"7", need: s=>s.best>=7},
+  {id:"d30", label:"30 Days", icon:"30", need: s=>s.best>=30},
+  {id:"d100", label:"100 Days", icon:"100", need: s=>s.best>=100},
+  {id:"v50", label:"50 Verses", icon:"📖", need: s=>s.total>=50},
+  {id:"lvl", label:"Unshaken", icon:"👑", need: s=>s.xp>=2000}
+];
+
+/* ---------- Streak roll-over check ---------- */
+(function rollover(){
+  const today = todayStr();
+  if(state.lastDate !== today){
+    if(state.lastDate){
+      const y = new Date(); y.setDate(y.getDate()-1);
+      const yesterdayYMD = y.getFullYear()+"-"+(y.getMonth()+1)+"-"+y.getDate();
+      if(state.lastDate !== yesterdayYMD){
+        state.streak = 0;
+      }
+    }
+    state.completedToday = false;
+    state.challengeDoneToday = false;
+  }
+})();
+
+/* ---------- Render ---------- */
+function render(){
+  document.getElementById("streakNum").textContent = state.streak;
+  document.getElementById("statStreak").textContent = state.streak;
+  document.getElementById("statBest").textContent = state.best;
+  document.getElementById("statTotal").textContent = state.total;
+
+  const {cur, next} = levelInfo(state.xp);
+  document.getElementById("levelName").textContent = cur.name;
+  if(next){
+    const pct = Math.min(100, Math.round(((state.xp-cur.need)/(next.need-cur.need))*100));
+    document.getElementById("barFill").style.width = pct+"%";
+    document.getElementById("levelXp").textContent = state.xp+" / "+next.need+" XP";
+  } else {
+    document.getElementById("barFill").style.width = "100%";
+    document.getElementById("levelXp").textContent = state.xp+" XP · Max";
+  }
+
+  const d = new Date();
+  document.getElementById("dateLabel").textContent = d.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'});
+
+  const badgesEl = document.getElementById("badges");
+  badgesEl.innerHTML = "";
+  BADGE_DEFS.forEach(b=>{
+    const unlocked = b.need(state);
+    const div = document.createElement("div");
+    div.className = "badge"+(unlocked?" unlocked":"");
+    div.innerHTML = `<div class="badge-icon">${b.icon}</div><div class="badge-label">${b.label}</div>`;
+    badgesEl.appendChild(div);
+  });
+
+  if(state.completedToday){
+    showVerse(false);
+    document.getElementById("doneBadge").style.display = "block";
+    document.getElementById("shareBtn").style.display = "inline-block";
+    document.getElementById("tapHint").style.display = "none";
+    document.getElementById("challenge").style.display = state.challengeDoneToday ? "none" : "block";
+    if(!state.challengeDoneToday) buildChallenge();
+  }
+}
+
+let verseIdx = dayIndex();
+let currentAnswer = "";
+
+function showVerse(animate){
+  document.getElementById("verseWrap").style.display = "block";
+  const [ref, text] = VERSES[verseIdx];
+  document.getElementById("verseRef").textContent = ref;
+  const words = text.split(" ");
+  const textEl = document.getElementById("verseText");
+  textEl.innerHTML = "";
+  words.forEach((w, i)=>{
+    const span = document.createElement("span");
+    span.className = "word";
+    span.textContent = w;
+    span.style.animationDelay = animate ? (i*0.045)+"s" : "0s";
+    if(!animate) span.style.opacity = 1;
+    textEl.appendChild(span);
+    if(i < words.length - 1){
+      textEl.appendChild(document.createTextNode("\u00A0"));
+    }
+  });
+}
+
+document.getElementById("sealBtn").addEventListener("click", ()=>{
+  if(state.completedToday) return;
+  const seal = document.getElementById("sealBtn");
+  seal.classList.add("seal-crack");
+  setTimeout(()=>{
+    seal.style.display = "none";
+    showVerse(true);
+    state.completedToday = true;
+    state.lastDate = todayStr();
+    state.streak += 1;
+    state.best = Math.max(state.best, state.streak);
+    state.total += 1;
+    state.xp += 15;
+    LS.set("vq_state", state);
+    document.getElementById("doneBadge").style.display = "block";
+    document.getElementById("shareBtn").style.display = "inline-block";
+    document.getElementById("tapHint").style.display = "none";
+    render();
+    document.getElementById("challenge").style.display = "block";
+    buildChallenge();
+  }, 480);
+});
+
+document.getElementById("shareBtn").addEventListener("click", async ()=>{
+  const [ref, text] = VERSES[verseIdx];
+  const shareText = `"${text}" — ${ref}\n\nToday's verse from Verse Quest 🕊️`;
+  if(navigator.share){
+    try{ await navigator.share({ text: shareText }); }catch(e){}
+  } else {
+    try{ await navigator.clipboard.writeText(shareText); alert("Verse copied to clipboard"); }catch(e){}
+  }
+});
+
+function buildChallenge(){
+  if(state.challengeDoneToday) { document.getElementById("challenge").style.display="none"; return; }
+  const [ref, text] = VERSES[verseIdx];
+  const words = text.replace(/[.,;:!?]/g,"").split(" ");
+  const candidates = words.map((w,i)=>({w,i})).filter(o => o.w.length>=4 && !STOPWORDS.has(o.w.toLowerCase()));
+  const pick = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : {w:words[0], i:0};
+  currentAnswer = pick.w;
+
+  const rawWords = text.split(" ");
+  let blankBuilt = 0;
+  const displayWords = rawWords.map((w,i)=>{
+    const clean = w.replace(/[.,;:!?]/g,"");
+    if(clean === pick.w && blankBuilt===0){ blankBuilt=1; return '<span class="blank-slot">?????</span>'+(w.match(/[.,;:!?]$/)?w.match(/[.,;:!?]$/)[0]:""); }
+    return w;
+  });
+  document.getElementById("blankVerse").innerHTML = displayWords.join(" ") + ` <span style="opacity:0.6; font-size:14px;">— ${ref}</span>`;
+
+  let opts = [currentAnswer];
+  const pool = DISTRACT_POOL.filter(w => w.toLowerCase() !== currentAnswer.toLowerCase());
+  while(opts.length < 4 && pool.length){
+    const idx = Math.floor(Math.random()*pool.length);
+    opts.push(pool.splice(idx,1)[0]);
+  }
+  opts = opts.sort(()=>Math.random()-0.5);
+
+  const optEl = document.getElementById("options");
+  optEl.innerHTML = "";
+  document.getElementById("challengeResult").style.display = "none";
+  opts.forEach(o=>{
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+    btn.textContent = o;
+    btn.addEventListener("click", ()=> handleAnswer(btn, o));
+    optEl.appendChild(btn);
+  });
+}
+
+function handleAnswer(btn, chosen){
+  const allBtns = document.querySelectorAll(".opt-btn");
+  allBtns.forEach(b=>b.disabled=true);
+  const resultEl = document.getElementById("challengeResult");
+  if(chosen.toLowerCase() === currentAnswer.toLowerCase()){
+    btn.classList.add("correct");
+    resultEl.textContent = "+10 XP — well remembered";
+    resultEl.style.color = "var(--good)";
+    state.xp += 10;
+  } else {
+    btn.classList.add("wrong");
+    allBtns.forEach(b=>{ if(b.textContent.toLowerCase()===currentAnswer.toLowerCase()) b.classList.add("correct"); });
+    resultEl.textContent = "The word was \""+currentAnswer+"\" — +2 XP for trying";
+    resultEl.style.color = "var(--gold-deep)";
+    state.xp += 2;
+  }
+  resultEl.style.display = "block";
+  state.challengeDoneToday = true;
+  LS.set("vq_state", state);
+  setTimeout(render, 900);
+}
+
+render();
+
+/* ---------- Register service worker ---------- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
